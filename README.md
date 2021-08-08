@@ -1,68 +1,78 @@
 # cl-wget
-This file documents the cl-wget utility for downloading network data.
 
-### Overview
+This file documents the cl-wget utility for downloading network data.
+Only the most basic functionalities have been ported.
+Refer to [GNU Wget 1.21.1-dirty Manual](https://www.gnu.org/software/wget/manual/wget.html) as inspiration for development.
+
+### [1](https://www.gnu.org/software/wget/manual/wget.html#Overview) Overview
+
 cl-wget is a free software for non-interactive download of files from the Web.
 
-### Syntax:
+### [2](https://www.gnu.org/software/wget/manual/wget.html#Invoking) Invoking
 
-`wget urls &key --page-requisites --quiet` => `result`
+By default, cl-wget is very simple to invoke. The basic syntax is:  
+`(wget url &key --quiet --restrict-file-names --page-requisites)` => `result`
 
-### Arguments and Values:
-`urls` --- a [proper sequence](http://clhs.lisp.se/Body/26_glo_p.htm#proper_sequence).  
+The arguments and values are:  
+`url` --- a [string designator](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_s.htm#string_designator).  
 `result` --- a [proper sequence](http://clhs.lisp.se/Body/26_glo_p.htm#proper_sequence).  
-`--page-requisites` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
 `--quiet` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
+`--restrict-file-names` --- one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).  
+`--page-requisites` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
 
-### Invoking
-By default, cl-wget is very simple to invoke. The basic syntax is:
+### [2.4](https://www.gnu.org/software/wget/manual/wget.html#Logging-and-Input-File-Options) Logging and Input File Options
+
+`--quiet` 
+ 
+Turn off cl-wget’s output. Suppress [\*standard-output\*](http://clhs.lisp.se/Body/26_glo_s.htm#standard_output).
+
+### [2.5](https://www.gnu.org/software/wget/manual/wget.html#Download-Options) Download Options
+
+`--restrict-file-names`
+
+Change which characters found in remote URLs must be escaped during generation of local filenames.
+This option may also be used to force all alphabetical cases to be either lower- or uppercase.
+By default, cl-wget escapes the characters that are not valid or safe as part of file names on your operating system.
+This option is useful for changing these defaults, perhaps because you are downloading to a non-native partition.
+The acceptable values are `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, and [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).
+
+When `:windows` is given, cl-wget uses `+` instead of `:` to separate host and port in local file names, and uses `@` instead of `?` to separate the query portion of the file name from the rest.
+Therefore, a URL that would be saved as `www.xemacs.org:4300/search.pl?input=blah` in `:unix` mode would be saved as `www.xemacs.org+4300/search.pl@input=blah` in `:windows` mode.
+cl-wget is in `:windows` mode by default, since Microsoft Windows is incapable of handling filenames containing characters `?` and `:`.
+
+When a function designator is given, cl-wget uses `(funcall --restrict-file-names url)` as the pathname.
 ```cl
-(cl-wget:wget (list url0 url1 url2 ...))
-(cl-wget:wget (vector url0 url1 url2 ...))
+(defvar url "https://www.gnu.org/software/wget/manual/wget.html")
 ```
-cl-wget will simply download all the URLs specified on the command line.
-However, you may wish to change some of the default parameters of cl-wget.
+```cl
+(wget url :--restrict-file-names :uppercase)
+; is equivalent to
+(wget url :--restrict-file-names #'string-upcase)
+```
+```cl
+(wget url :--restrict-file-names :windows)
+; is equivalent to
+(wget url :--restrict-file-names (lambda (url) (substitute #\+ #\: (substitute #\@ #\? url))))
+```
 
-### Logging Options
-`--quiet`:  
-Turn off cl-wget’s output.
+### [2.11](https://www.gnu.org/software/wget/manual/wget.html#Recursive-Retrieval-Options) Recursive Retrieval Options
 
-### Recursive Retrieval Options
-`--page-requisites`:  
+`--page-requisites`
+
 Ordinarily, when downloading a single HTML page, any requisite documents that may be needed to display it properly are not downloaded.
 This option causes cl-wget to download all the files that are necessary to properly display a given HTML page.
 This includes such things as inlined images, sounds, and referenced stylesheets.
-
-### Example Usage
-The sequence returned indicates that cl-wget skipped four URLs in this case:
 ```cl
 CL-USER> (ql:quickload :cl-wget)
 To load "cl-wget":
   Load 1 ASDF system:
     cl-wget
 ; Loading "cl-wget"
-
+.....
 (:CL-WGET)
-CL-USER> (cl-wget:wget
-          '("http://www.paulgraham.com/"
-            "https://www.wolframalpha.com/input/index.html")
-          :--page-requisites t)
-
-Downloading "http://www.virtumundo.com/images/spacer.gif" (43.0 B)
-.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
-Downloading "http://www.virtumundo.com/images/spacer.gif" (43.0 B)
-.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
-Downloading "http://ycombinator.com/arc/arc.png" (Unknown size)
-
-Downloading "http://www.paulgraham.com/articles.html" (Unknown size)
-
-Downloading "http://www.amazon.com/gp/product/0596006624" (2.15 kB)
-.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
-Downloading "http://www.paulgraham.com/books.html" (Unknown size)
-
-(#("http://www.paulgraham.com/" T T T T T T T T T T T T
-   "http://ycombinator.com/" T T T T T T T T T T T T T T T T T T T)
- #(T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T
-   T T T T T T T T T "https://enable-javascript.com/"
-   "https://www.wolframalpha.com/" T))
+CL-USER> (cl-wget:wget "http://clhs.lisp.se" :--quiet t :--page-requisites t)
+#("http://clhs.lisp.se/" T T T T T T T T T T T "http://www.lispworks.com/" T T
+  T T T T T T "http://www.lispworks.com/" T "mailto:kmp@lispworks.com" T T T T
+  T T T T T T T)
 ```
+The sequence returned indicates that cl-wget skipped four URLs.
