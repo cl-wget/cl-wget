@@ -1,6 +1,6 @@
 "
     cl-wget is a free utility for retrieving network data using HTTPS.
-    Copyright (C) <year>  <name of author>
+    Copyright (C) 2021  Lin2Jing4
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published
@@ -27,25 +27,32 @@
 
 (in-package cl-wget)
 
-(defun wget (uris &key --page-requisites --quiet)
+(defun wget (url &key --quiet --restrict-file-names --page-requisites)
   (map
-   (type-of uris)
-   (lambda (uri)
-     (if
-      --page-requisites
-      (wget
-       (map
-        'vector
-        (lambda (u) (render-uri (merge-uris u uri) nil))
-        (let ((dom ($ (initialize (http-request uri)))))
-          (concatenate
-           'vector
-           (vector uri)
-           ($ dom "[src]" (attr :src))
-           ($ dom "[href]" (attr :href)))))
-       :--quiet --quiet)
-      (if
-       (uiop:file-pathname-p uri)
-       (download uri uri :quiet (or --quiet (terpri)))
-       uri)))
-   uris))
+   'vector
+   (lambda (ur)
+     (let ((u (render-uri (merge-uris ur url) nil)))
+       (if
+        (or
+         (uiop:directory-pathname-p u)
+         (string-equal (uri-scheme (uri u)) "mailto"))
+        u
+        (download
+         u
+         (case --restrict-file-names
+           ((:nocontrol) u)
+           ((:lowercase) (string-downcase u))
+           ((:uppercase) (string-upcase u))
+           ((:unix) u)
+           ((:windows nil) (substitute #\+ #\: (substitute #\@ #\? u)))
+           (otherwise (funcall --restrict-file-names u)))
+         :quiet (or --quiet (terpri))))))
+   (if
+    --page-requisites
+    (let ((dom ($ (initialize (http-request url)))))
+      (concatenate
+       'vector
+       (vector url)
+       ($ dom "[src]" (attr :src))
+       ($ dom "[href]" (attr :href))))
+    (vector url))))
