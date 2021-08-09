@@ -11,10 +11,10 @@ cl-wget is a free software for non-interactive download of files from the Web.
 ### [2](https://www.gnu.org/software/wget/manual/wget.html#Invoking) Invoking
 
 By default, cl-wget is very simple to invoke. The basic syntax is:  
-`(wget url &key --quiet --restrict-file-names --page-requisites)` => `result`
+`(wget urls &key --quiet --restrict-file-names --page-requisites)` => `result`
 
 The arguments and values are:  
-`url` --- a [string designator](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_s.htm#string_designator).  
+`urls` --- a [string designator](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_s.htm#string_designator), or a [tree](http://clhs.lisp.se/Body/26_glo_t.htm#tree).  
 `result` --- a [proper sequence](http://clhs.lisp.se/Body/26_glo_p.htm#proper_sequence).  
 `--quiet` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
 `--restrict-file-names` --- one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).  
@@ -70,9 +70,39 @@ To load "cl-wget":
 ; Loading "cl-wget"
 .....
 (:CL-WGET)
-CL-USER> (cl-wget:wget "http://clhs.lisp.se" :--quiet t :--page-requisites t)
-#("http://clhs.lisp.se/" T T T T T T T T T T T "http://www.lispworks.com/" T T
-  T T T T T T "http://www.lispworks.com/" T "mailto:kmp@lispworks.com" T T T T
-  T T T T T T T)
+CL-USER> (cl-wget:wget
+          '("https://www.wolframalpha.com/input"
+            "https://mitpress.mit.edu/sites/default/files/sicp/index.html"
+            ((((("https://www.gnu.org/software/wget/manual/wget.html"
+                 "https://gigamonkeys.com/book/introduction-why-lisp.html"))))
+             "http://www.paulgraham.com/lisp.html"
+             (((((((("https://www.gnu.org/philosophy/philosophy.html")))))))))
+            ("https://lispcookbook.github.io/cl-cookbook/getting-started.html")
+            "http://www.lispworks.com/documentation/HyperSpec/Front/index.htm")
+          :--page-requisites t)
+
+Downloading "https://www.wolframalpha.com/input" (16.003 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/images/running-man_5SPZTwCb.png" (111.585 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/images/Logo_3KbuDCMc.svg" (29.037 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/runtime/polyfills-e21575077778f414a069.js" (79.824 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/FsRzyQyGxyz9ToJRTJuna/pages/input.js" (1.892 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/FsRzyQyGxyz9ToJRTJuna/pages/_app.js" (131.202 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/runtime/webpack-758ed5a910c073549032.js" (6.749 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/chunks/framework.7e7abc056a23dbc17509.js" (130.929 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/chunks/b7dac8a5.d68380b3825feee444fd.js" (57.111 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/chunks/f40a3f00.4c5bd6d85d7b5f4b9ea2.js" (291.884 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
+Downloading "https://www.wolframalpha.com/_next/static/chunks/commons.fb36529629248d0d9ae3.js" (502.153 kB)
+.........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
 ```
-The sequence returned indicates that cl-wget skipped four URLs.
+Multiple URLs can together form a list or a tree in any way you like.
+cl-wget will properly traverse and do its best to download all resources.

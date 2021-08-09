@@ -27,32 +27,33 @@
 
 (in-package cl-wget)
 
-(defun wget (url &key --quiet --restrict-file-names --page-requisites)
-  (map
-   'vector
-   (lambda (ur)
-     (let ((u (render-uri (merge-uris ur url) nil)))
-       (if
-        (or
-         (uiop:directory-pathname-p u)
-         (string-equal (uri-scheme (uri u)) "mailto"))
-        u
-        (download
-         u
-         (case --restrict-file-names
-           ((:nocontrol) u)
-           ((:lowercase) (string-downcase u))
-           ((:uppercase) (string-upcase u))
-           ((:unix) u)
-           ((:windows nil) (substitute #\+ #\: (substitute #\@ #\? u)))
-           (otherwise (funcall --restrict-file-names u)))
-         :quiet (or --quiet (terpri))))))
-   (if
-    --page-requisites
-    (let ((dom ($ (initialize (http-request url)))))
-      (concatenate
-       'vector
-       (vector url)
-       ($ dom "[src]" (attr :src))
-       ($ dom "[href]" (attr :href))))
-    (vector url))))
+(defun wget (urls &key --quiet --restrict-file-names --page-requisites)
+  (subst
+   t t (list urls) :key
+   (lambda (url)
+     (unless (listp url)
+       (map
+        'vector
+        (lambda (ur)
+          (let ((u (render-uri (merge-uris ur url) nil)))
+            (handler-case
+                (download
+                 u
+                 (case --restrict-file-names
+                   ((:nocontrol) u)
+                   ((:lowercase) (string-downcase u))
+                   ((:uppercase) (string-upcase u))
+                   ((:unix) u)
+                   ((:windows nil) (substitute #\+ #\: (substitute #\@ #\? u)))
+                   (otherwise (funcall --restrict-file-names u)))
+                 :quiet (or --quiet (terpri)))
+              (t (cond) (or --quiet (warn "~%~a~%~a~%~a" ur u cond))))))
+        (if
+         --page-requisites
+         (let ((dom ($ (initialize (http-request url)))))
+           (concatenate
+            'vector
+            (vector url)
+            ($ dom "[src]" (attr :src))
+            ($ dom "[href]" (attr :href))))
+         (vector url)))))))
