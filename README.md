@@ -11,24 +11,24 @@ cl-wget is a free software for non-interactive download of files from the Web.
 ### [2](https://www.gnu.org/software/wget/manual/wget.html#Invoking) Invoking
 
 By default, cl-wget is very simple to invoke. The basic syntax is:  
-`(wget urls &key --quiet --restrict-file-names --page-requisites)` => `result`
+`(wget urls &key quiet restrict-file-names page-requisites)` => `result`
 
 The arguments and values are:  
 `urls` --- a [string designator](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_s.htm#string_designator), or a [tree](http://clhs.lisp.se/Body/26_glo_t.htm#tree).  
+`quiet` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
+`restrict-file-names` --- one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).  
+`page-requisites` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
 `result` --- a [proper sequence](http://clhs.lisp.se/Body/26_glo_p.htm#proper_sequence).  
-`--quiet` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
-`--restrict-file-names` --- one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).  
-`--page-requisites` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
 
 ### [2.4](https://www.gnu.org/software/wget/manual/wget.html#Logging-and-Input-File-Options) Logging and Input File Options
 
-`--quiet` 
+`quiet` 
  
 Turn off cl-wget’s output. Suppress [\*standard-output\*](http://clhs.lisp.se/Body/26_glo_s.htm#standard_output).
 
 ### [2.5](https://www.gnu.org/software/wget/manual/wget.html#Download-Options) Download Options
 
-`--restrict-file-names`
+`restrict-file-names`
 
 Change which characters found in remote URLs must be escaped during generation of local filenames.
 This option may also be used to force all alphabetical cases to be either lower- or uppercase.
@@ -40,24 +40,24 @@ When `:windows` is given, cl-wget uses `+` instead of `:` to separate host and p
 Therefore, a URL that would be saved as `www.xemacs.org:4300/search.pl?input=blah` in `:unix` mode would be saved as `www.xemacs.org+4300/search.pl@input=blah` in `:windows` mode.
 cl-wget is in `:windows` mode by default, since Microsoft Windows is incapable of handling filenames containing characters `?` and `:`.
 
-When a function designator is given, cl-wget uses `(funcall --restrict-file-names url)` as the pathname.
+When a function designator is given, cl-wget uses `(funcall restrict-file-names url)` as the pathname.
 ```cl
 (defvar url "https://www.gnu.org/software/wget/manual/wget.html")
 ```
 ```cl
-(wget url :--restrict-file-names :uppercase)
+(wget url :restrict-file-names :uppercase)
 ; is equivalent to
-(wget url :--restrict-file-names #'string-upcase)
+(wget url :restrict-file-names #'string-upcase)
 ```
 ```cl
-(wget url :--restrict-file-names :windows)
+(wget url :restrict-file-names :windows)
 ; is equivalent to
-(wget url :--restrict-file-names (lambda (url) (substitute #\+ #\: (substitute #\@ #\? url))))
+(wget url :restrict-file-names (lambda (url) (substitute #\+ #\: (substitute #\@ #\? url))))
 ```
 
 ### [2.11](https://www.gnu.org/software/wget/manual/wget.html#Recursive-Retrieval-Options) Recursive Retrieval Options
 
-`--page-requisites`
+`page-requisites`
 
 Ordinarily, when downloading a single HTML page, any requisite documents that may be needed to display it properly are not downloaded.
 This option causes cl-wget to download all the files that are necessary to properly display a given HTML page.
@@ -79,7 +79,7 @@ CL-USER> (cl-wget:wget
              (((((((("https://www.gnu.org/philosophy/philosophy.html")))))))))
             ("https://lispcookbook.github.io/cl-cookbook/getting-started.html")
             "http://www.lispworks.com/documentation/HyperSpec/Front/index.htm")
-          :--page-requisites t)
+          :page-requisites t)
 
 Downloading "https://www.wolframalpha.com/input" (16.003 kB)
 .........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
