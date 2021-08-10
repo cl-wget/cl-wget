@@ -27,7 +27,7 @@
 
 (in-package cl-wget)
 
-(defun wget (urls &key --quiet --restrict-file-names --page-requisites)
+(defun wget (urls &key quiet restrict-file-names page-requisites)
   (subst
    t t (list urls) :key
    (lambda (url)
@@ -39,17 +39,17 @@
             (handler-case
                 (download
                  u
-                 (case --restrict-file-names
+                 (case restrict-file-names
                    ((:nocontrol) u)
                    ((:lowercase) (string-downcase u))
                    ((:uppercase) (string-upcase u))
                    ((:unix) u)
                    ((:windows nil) (substitute #\+ #\: (substitute #\@ #\? u)))
-                   (otherwise (funcall --restrict-file-names u)))
-                 :quiet (or --quiet (terpri)))
-              (t (cond) (or --quiet (warn "~%~a~%~a~%~a" ur u cond))))))
+                   (otherwise (funcall restrict-file-names u)))
+                 :quiet (or quiet (terpri)))
+              (t (cond) (or quiet (warn "~%~a~%~a~%~a" ur u cond))))))
         (if
-         --page-requisites
+         page-requisites
          (let ((dom ($ (initialize (http-request url)))))
            (concatenate
             'vector
