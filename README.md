@@ -2,48 +2,47 @@
 
 This file documents the cl-wget utility for downloading network data.
 Only the most basic functionalities have been ported.
-Refer to [GNU Wget 1.21.1-dirty Manual](https://www.gnu.org/software/wget/manual/wget.html) as inspiration for development.
+Refer to [GNU Wget documentation](https://www.gnu.org/software/wget/manual/wget.html) as inspiration for development.
 
-### [1](https://www.gnu.org/software/wget/manual/wget.html#Overview) Overview
+## 1 Overview [\*](https://www.gnu.org/software/wget/manual/wget.html#Overview)
 
 cl-wget is a free software for non-interactive download of files from the Web.
 
-### [2](https://www.gnu.org/software/wget/manual/wget.html#Invoking) Invoking
+## 2 Invoking [\*](https://www.gnu.org/software/wget/manual/wget.html#Invoking)
 
 By default, cl-wget is very simple to invoke. The basic syntax is:  
-`(wget urls &key quiet restrict-file-names page-requisites)` => `result`
+`(wget urls &key quiet restrict-file-names page-requisites)` → `urls`
+
+Multiple URLs can together form a list or a tree in any way you like.
+cl-wget will properly traverse and do its best to download all resources.
 
 The arguments and values are:  
-`urls` --- a [string designator](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_s.htm#string_designator), or a [tree](http://clhs.lisp.se/Body/26_glo_t.htm#tree).  
-`quiet` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
-`restrict-file-names` --- one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).  
-`page-requisites` --- a [generalized boolean](http://www.lispworks.com/documentation/lw50/CLHS/Body/26_glo_g.htm#generalized_boolean).  
-`result` --- a [proper sequence](http://clhs.lisp.se/Body/26_glo_p.htm#proper_sequence).  
+`urls` - a [string designator](https://franz.com/support/documentation/current/ansicl/glossary/s.htm#stringdesignator), or a [tree](https://franz.com/support/documentation/current/ansicl/glossary/t.htm#tree) made up of string designators.  
+`quiet` - a [generalized boolean](https://franz.com/support/documentation/current/ansicl/glossary/g.htm#generalizedboolean).  
+`restrict-file-names` - one of `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, or a [function designator](https://franz.com/support/documentation/current/ansicl/glossary/f.htm#functiondesignator).  
+`page-requisites` - a generalized boolean.  
 
-### [2.4](https://www.gnu.org/software/wget/manual/wget.html#Logging-and-Input-File-Options) Logging and Input File Options
+### 2.4 Logging and Input File Options [\*](https://www.gnu.org/software/wget/manual/wget.html#Logging-and-Input-File-Options)
 
-`quiet` 
+#### `quiet` 
  
-Turn off cl-wget’s output. Suppress [\*standard-output\*](http://clhs.lisp.se/Body/26_glo_s.htm#standard_output).
+Turn off cl-wget’s output. Suppress [\*standard-output\*](https://franz.com/support/documentation/current/ansicl/dictentr/debug-io.htm).
 
-### [2.5](https://www.gnu.org/software/wget/manual/wget.html#Download-Options) Download Options
+### 2.5 Download Options [\*](https://www.gnu.org/software/wget/manual/wget.html#Download-Options)
 
-`restrict-file-names`
+#### `restrict-file-names`
 
 Change which characters found in remote URLs must be escaped during generation of local filenames.
 This option may also be used to force all alphabetical cases to be either lower- or uppercase.
 By default, cl-wget escapes the characters that are not valid or safe as part of file names on your operating system.
 This option is useful for changing these defaults, perhaps because you are downloading to a non-native partition.
-The acceptable values are `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, and [function designator](http://clhs.lisp.se/Body/26_glo_f.htm#function_designator).
+The acceptable values are `:nocontrol`, `:lowercase`, `:uppercase`, `:unix`, `:windows`, and function designator.
 
 When `:windows` is given, cl-wget uses `+` instead of `:` to separate host and port in local file names, and uses `@` instead of `?` to separate the query portion of the file name from the rest.
 Therefore, a URL that would be saved as `www.xemacs.org:4300/search.pl?input=blah` in `:unix` mode would be saved as `www.xemacs.org+4300/search.pl@input=blah` in `:windows` mode.
-cl-wget is in `:windows` mode by default, since Microsoft Windows is incapable of handling filenames containing characters `?` and `:`.
+For consistency and compatibility, cl-wget is in `:windows` mode by default, since Microsoft Windows is incapable of handling filenames containing characters `?` and `:`.
 
-When a function designator is given, cl-wget uses `(funcall restrict-file-names url)` as the pathname.
-```cl
-(defvar url "https://www.gnu.org/software/wget/manual/wget.html")
-```
+When a function designator is given, cl-wget uses `(funcall restrict-file-names url)` as the pathname. For example,
 ```cl
 (wget url :restrict-file-names :uppercase)
 ; is equivalent to
@@ -55,13 +54,16 @@ When a function designator is given, cl-wget uses `(funcall restrict-file-names 
 (wget url :restrict-file-names (lambda (url) (substitute #\+ #\: (substitute #\@ #\? url))))
 ```
 
-### [2.11](https://www.gnu.org/software/wget/manual/wget.html#Recursive-Retrieval-Options) Recursive Retrieval Options
+### 2.11 Recursive Retrieval Options [\*](https://www.gnu.org/software/wget/manual/wget.html#Recursive-Retrieval-Options) 
 
-`page-requisites`
+#### `page-requisites`
 
 Ordinarily, when downloading a single HTML page, any requisite documents that may be needed to display it properly are not downloaded.
 This option causes cl-wget to download all the files that are necessary to properly display a given HTML page.
 This includes such things as inlined images, sounds, and referenced stylesheets.
+
+## 7 Examples [\*](https://www.gnu.org/software/wget/manual/wget.html#Examples)
+### 7.1 Simple Usage [\*](https://www.gnu.org/software/wget/manual/wget.html#Simple-Usage)
 ```cl
 CL-USER> (ql:quickload :cl-wget)
 To load "cl-wget":
@@ -104,5 +106,3 @@ Downloading "https://www.wolframalpha.com/_next/static/chunks/f40a3f00.4c5bd6d85
 Downloading "https://www.wolframalpha.com/_next/static/chunks/commons.fb36529629248d0d9ae3.js" (502.153 kB)
 .........10%.........20%.........30%.........40%.........50%.........60%.........70%.........80%.........90%.........100%
 ```
-Multiple URLs can together form a list or a tree in any way you like.
-cl-wget will properly traverse and do its best to download all resources.
